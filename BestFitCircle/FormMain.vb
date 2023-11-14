@@ -19,20 +19,21 @@ Public Class FormMain
         picMain.BorderStyle = BorderStyle.FixedSingle
 
         ' Set example points
-        points.Add(New PointS With {.X = -50, .Y = 68})
-        points.Add(New PointS With {.X = 4, .Y = 40})
-        points.Add(New PointS With {.X = 30, .Y = -50})
-        points.Add(New PointS With {.X = 20, .Y = -70})
-        points.Add(New PointS With {.X = -30, .Y = -60})
+        points.Add(New PointS With {.X = -50.25, .Y = 68.12})
+        points.Add(New PointS With {.X = 115.3, .Y = 42.8})
+        points.Add(New PointS With {.X = 80.9, .Y = -50.66})
+        points.Add(New PointS With {.X = -60.52, .Y = -50.06})
+        points.Add(New PointS With {.X = -36.33, .Y = -70.78})
 
         ' Update data grid view with points
         ' Set up the DataGridView
-        dataGrid.ColumnCount = 2
+        dataGrid.ColumnCount = 3
         dataGrid.Columns(0).HeaderText = "X"
         dataGrid.Columns(1).HeaderText = "Y"
+        dataGrid.Columns(2).HeaderText = "Data Analysis"
 
         For Each pt As PointS In points
-            dataGrid.Rows.Add(pt.X.ToString, pt.Y.ToString)
+            dataGrid.Rows.Add(pt.X.ToString, pt.Y.ToString, "")
         Next
 
         ' Use the Least Squares method to find the best-fit circle
@@ -66,6 +67,17 @@ Public Class FormMain
         ' Use the Least Squares method to find the best-fit circle
         circle = CircleFit.FitCircle(points)
 
+        ' Calculate the minimum distance of each point to circle
+        For Each row As DataGridViewRow In dataGrid.Rows
+            If row.Index >= dataGrid.Rows.Count - 1 Then
+                Exit For
+            End If
+
+            Dim pt As PointS = points(row.Index)
+            row.Cells(2).Value = CSng(Math.Abs(Math.Sqrt((pt.X - circle.CenterX) * (pt.X - circle.CenterX) +
+                                           (pt.Y - circle.CenterY) * (pt.Y - circle.CenterY)) - circle.Radius))
+        Next
+
         ' Draw the best fit circle
         DrawCircle(circle)
     End Sub
@@ -84,6 +96,7 @@ Public Class FormMain
 
         Dim g As Graphics = Graphics.FromImage(bmp)
         g.TextRenderingHint = TextRenderingHint.AntiAlias
+        g.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
 
         Dim dx As Single = picMain.Width / 2
         Dim dy As Single = picMain.Height / 2
@@ -95,17 +108,31 @@ Public Class FormMain
 
         ' Draw the points
         Dim myFont As New Font("Seoge UI", 8)
-        Dim myBrush As New SolidBrush(Color.Black)
+        Dim brhBlue As New SolidBrush(Color.Blue)
+        Dim brhBlack As New SolidBrush(Color.Black)
 
         For Each pt As PointS In points
             ' Draw the point
-            g.DrawEllipse(Pens.Blue, dx + pt.X - 2, dy - pt.Y - 2, 4, 4)
+            g.FillEllipse(brhBlue, dx + pt.X - 2, dy - pt.Y - 2, 4, 4)
 
             ' Draw a X-Y coordinates for the point.
-            g.DrawString("(" + pt.X.ToString + "," + pt.Y.ToString + ")", myFont, myBrush, dx + pt.X + 5, dy - pt.Y - 5)
+            g.DrawString("(" + pt.X.ToString + ", " + pt.Y.ToString + ")", myFont, brhBlack, dx + pt.X + 5, dy - pt.Y - 5)
         Next
+
+        Dim centerX As Single = Math.Floor(circle.CenterX * 1000) / 1000
+        Dim centerY As Single = Math.Floor(circle.CenterY * 1000) / 1000
+        Dim radius As Single = Math.Floor(circle.Radius * 1000) / 1000
+
         ' Draw the best-fit circle
-        g.DrawEllipse(Pens.Red, dx + circle.CenterX - circle.Radius, dy - circle.CenterY - circle.Radius, 2 * circle.Radius, 2 * circle.Radius)
+        ' Draw center of the circle
+        Dim brhRed As New SolidBrush(Color.Red)
+        g.FillEllipse(brhRed, dx + centerX - 2, dy - centerY - 2, 4, 4)
+        g.DrawString("(" + centerX.ToString + ", " + centerY.ToString + ")", myFont,
+                        brhBlack, dx + centerX + 5, dy - centerY - 5)
+        ' Draw radius of the circle
+        g.DrawString("Radius:" + radius.ToString, myFont, brhBlack, 10, 10)
+        ' Draw the circle
+        g.DrawEllipse(Pens.Red, dx + centerX - radius, dy - centerY - radius, 2 * radius, 2 * radius)
 
         ' Display the result
         picMain.Image = bmp
