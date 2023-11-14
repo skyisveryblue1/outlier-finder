@@ -26,6 +26,7 @@ Partial Class FormMain
         picMain = New PictureBox()
         btnFindBFC = New Button()
         btnClearPoints = New Button()
+        btnFindTrendLine = New Button()
         CType(dataGrid, ComponentModel.ISupportInitialize).BeginInit()
         CType(picMain, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
@@ -33,48 +34,58 @@ Partial Class FormMain
         ' dataGrid
         ' 
         dataGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        dataGrid.Location = New Point(443, 38)
+        dataGrid.Location = New Point(537, 12)
         dataGrid.Name = "dataGrid"
-        dataGrid.Size = New Size(334, 312)
+        dataGrid.Size = New Size(351, 353)
         dataGrid.TabIndex = 0
         ' 
         ' picMain
         ' 
-        picMain.Location = New Point(24, 38)
+        picMain.Location = New Point(12, 12)
         picMain.Name = "picMain"
-        picMain.Size = New Size(392, 372)
+        picMain.Size = New Size(510, 398)
         picMain.TabIndex = 1
         picMain.TabStop = False
         ' 
         ' btnFindBFC
         ' 
-        btnFindBFC.Location = New Point(443, 371)
+        btnFindBFC.Location = New Point(24, 431)
         btnFindBFC.Name = "btnFindBFC"
-        btnFindBFC.Size = New Size(205, 39)
+        btnFindBFC.Size = New Size(233, 39)
         btnFindBFC.TabIndex = 2
-        btnFindBFC.Text = "Find && Draw"
+        btnFindBFC.Text = "Find Best Fit Circle"
         btnFindBFC.UseVisualStyleBackColor = True
         ' 
         ' btnClearPoints
         ' 
-        btnClearPoints.Location = New Point(683, 371)
+        btnClearPoints.Location = New Point(590, 371)
         btnClearPoints.Name = "btnClearPoints"
-        btnClearPoints.Size = New Size(94, 39)
+        btnClearPoints.Size = New Size(244, 39)
         btnClearPoints.TabIndex = 2
         btnClearPoints.Text = "Clear Points"
         btnClearPoints.UseVisualStyleBackColor = True
         ' 
+        ' btnFindTrendLine
+        ' 
+        btnFindTrendLine.Location = New Point(278, 431)
+        btnFindTrendLine.Name = "btnFindTrendLine"
+        btnFindTrendLine.Size = New Size(233, 39)
+        btnFindTrendLine.TabIndex = 2
+        btnFindTrendLine.Text = "Find Trend Line"
+        btnFindTrendLine.UseVisualStyleBackColor = True
+        ' 
         ' FormMain
         ' 
-        AutoScaleDimensions = New SizeF(7.0F, 15.0F)
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(800, 450)
+        ClientSize = New Size(900, 490)
         Controls.Add(btnClearPoints)
+        Controls.Add(btnFindTrendLine)
         Controls.Add(btnFindBFC)
         Controls.Add(picMain)
         Controls.Add(dataGrid)
         Name = "FormMain"
-        Text = "Best Fit Circle Finder"
+        Text = "Outlier Finder"
         CType(dataGrid, ComponentModel.ISupportInitialize).EndInit()
         CType(picMain, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
@@ -84,5 +95,6 @@ Partial Class FormMain
     Friend WithEvents picMain As PictureBox
     Friend WithEvents btnFindBFC As Button
     Friend WithEvents btnClearPoints As Button
+    Friend WithEvents btnFindTrendLine As Button
 
 End Class
