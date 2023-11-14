@@ -90,6 +90,7 @@ Public Class FormMain
 
         ' Draw the points
         Dim fontNormal As New Font("Seoge UI", 8)
+        Dim fontBig As New Font("Seoge UI", 14)
         Dim brhBlue As New SolidBrush(Color.Blue)
         Dim brhBlack As New SolidBrush(Color.Black)
 
@@ -112,7 +113,7 @@ Public Class FormMain
         g.DrawString("(" + centerX.ToString + ", " + centerY.ToString + ")", fontNormal,
                         brhBlack, dx + centerX + 5, dy - centerY - 5)
         ' Draw radius of the circle
-        g.DrawString("Radius:" + radius.ToString, fontNormal, brhBlack, 10, 10)
+        g.DrawString("Radius:" + radius.ToString, fontBig, brhBlack, 10, 10)
         ' Draw the circle
         g.DrawEllipse(Pens.Red, dx + centerX - radius, dy - centerY - radius, 2 * radius, 2 * radius)
 
@@ -196,10 +197,11 @@ Public Class FormMain
             Dim xNearest As Double = (pt.X + lr.Slope * pt.Y - lr.Slope * lr.Intercept) / (lr.Slope ^ 2 + 1)
             Dim yNearest As Double = lr.Slope * xNearest + lr.Intercept
 
-            g.DrawLine(Pens.Red, CSng(dx + pt.X), CSng(dy - pt.Y), CSng(dx + xNearest), CSng(dy - yNearest))
-
             ' Draw the nearest point on the trend line
             g.FillEllipse(brhRed, CSng(dx + xNearest - 3), CSng(dy - yNearest - 3), 6, 6)
+
+            ' Draw the line between two points
+            g.DrawLine(Pens.Red, CSng(dx + pt.X), CSng(dy - pt.Y), CSng(dx + xNearest), CSng(dy - yNearest))
         Next
 
         ' Display the result
