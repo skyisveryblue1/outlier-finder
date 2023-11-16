@@ -8,8 +8,7 @@ Imports MathNet.Numerics
 Imports MathNet.Numerics.LinearAlgebra
 
 Public Class FormMain
-    Dim points As New List(Of PointS)
-    Dim circle As New Circle
+    Dim ptForOutlier As New List(Of PointF)
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
@@ -17,11 +16,11 @@ Public Class FormMain
         picMain.BorderStyle = BorderStyle.FixedSingle
 
         ' Set example points
-        points.Add(New PointS With {.X = -50.25, .Y = 68.12})
-        points.Add(New PointS With {.X = 115.3, .Y = 42.8})
-        points.Add(New PointS With {.X = 80.9, .Y = -50.66})
-        points.Add(New PointS With {.X = -60.52, .Y = -50.06})
-        points.Add(New PointS With {.X = -36.33, .Y = -70.78})
+        ptForOutlier.Add(New PointF With {.X = -50.25, .Y = 68.12})
+        ptForOutlier.Add(New PointF With {.X = 115.3, .Y = 42.8})
+        ptForOutlier.Add(New PointF With {.X = 80.9, .Y = -50.66})
+        ptForOutlier.Add(New PointF With {.X = -60.52, .Y = -50.06})
+        ptForOutlier.Add(New PointF With {.X = -36.33, .Y = -70.78})
 
         ' Update data grid view with points
         ' Set up the DataGridView
@@ -30,7 +29,7 @@ Public Class FormMain
         dataGrid.Columns(1).HeaderText = "Y"
         dataGrid.Columns(2).HeaderText = "Data Analysis"
 
-        For Each pt As PointS In points
+        For Each pt As PointF In ptForOutlier
             dataGrid.Rows.Add(pt.X.ToString, pt.Y.ToString, "")
         Next
 
@@ -53,7 +52,7 @@ Public Class FormMain
         UpdatePointsFromDataGrid()
 
         ' Use the Least Squares method to find the best-fit circle
-        circle = CircleFit.FitCircle(points)
+        Dim circle As Circle = CircleFit.FitCircle(ptForOutlier)
 
         ' Calculate the minimum distance of each point to circle
         For Each row As DataGridViewRow In dataGrid.Rows
@@ -61,9 +60,9 @@ Public Class FormMain
                 Exit For
             End If
 
-            Dim pt As PointS = points(row.Index)
-            row.Cells(2).Value = CSng(Math.Abs(Math.Sqrt((pt.X - circle.CenterX) * (pt.X - circle.CenterX) +
-                                           (pt.Y - circle.CenterY) * (pt.Y - circle.CenterY)) - circle.Radius))
+            Dim pt As PointF = ptForOutlier(row.Index)
+            row.Cells(2).Value = CSng(Math.Abs(Math.Sqrt((pt.X - circle.center.X) * (pt.X - circle.center.X) +
+                                           (pt.Y - circle.center.Y) * (pt.Y - circle.center.Y)) - circle.radius))
         Next
 
         ' Draw the best fit circle
@@ -94,7 +93,7 @@ Public Class FormMain
         Dim brhBlue As New SolidBrush(Color.Blue)
         Dim brhBlack As New SolidBrush(Color.Black)
 
-        For Each pt As PointS In points
+        For Each pt As PointF In ptForOutlier
             ' Draw the point
             g.FillEllipse(brhBlue, dx + pt.X - 2, dy - pt.Y - 2, 4, 4)
 
@@ -102,9 +101,9 @@ Public Class FormMain
             g.DrawString("(" + pt.X.ToString + ", " + pt.Y.ToString + ")", fontNormal, brhBlack, dx + pt.X + 5, dy - pt.Y - 5)
         Next
 
-        Dim centerX As Single = Math.Floor(circle.CenterX * 1000) / 1000
-        Dim centerY As Single = Math.Floor(circle.CenterY * 1000) / 1000
-        Dim radius As Single = Math.Floor(circle.Radius * 1000) / 1000
+        Dim centerX As Single = Math.Floor(circle.center.X * 1000) / 1000
+        Dim centerY As Single = Math.Floor(circle.center.Y * 1000) / 1000
+        Dim radius As Single = Math.Floor(circle.radius * 1000) / 1000
 
         ' Draw the best-fit circle
         ' Draw center of the circle
@@ -133,7 +132,7 @@ Public Class FormMain
         UpdatePointsFromDataGrid()
 
         ' Use the Least Squares method to find the best-fit circle
-        Dim lr As LinearRegression = TrendLineFinder.Calculate(points)
+        Dim lr As Line = TrendLineFinder.Calculate(ptForOutlier)
 
         ' Calculate the minimum distance of each point to circle
         For Each row As DataGridViewRow In dataGrid.Rows
@@ -141,7 +140,7 @@ Public Class FormMain
                 Exit For
             End If
 
-            Dim pt As PointS = points(row.Index)
+            Dim pt As PointF = ptForOutlier(row.Index)
             row.Cells(2).Value = CSng(Math.Abs(lr.Slope * pt.X - pt.Y + lr.Intercept) / Math.Sqrt(lr.Slope ^ 2 + 1))
         Next
 
@@ -150,7 +149,7 @@ Public Class FormMain
     End Sub
 
     ' Display the result for Best Fit Circle in the PictureBox
-    Private Sub DrawTrendLine(lr As LinearRegression)
+    Private Sub DrawTrendLine(lr As Line)
         ' Clear the PictureBox
         picMain.Image = Nothing
         Dim bmp As New Bitmap(picMain.Width, picMain.Height)
@@ -174,7 +173,7 @@ Public Class FormMain
         Dim brhRed As New SolidBrush(Color.Red)
         Dim brhBlack As New SolidBrush(Color.Black)
 
-        For Each pt As PointS In points
+        For Each pt As PointF In ptForOutlier
             ' Draw the point
             g.FillEllipse(brhBlue, dx + pt.X - 3, dy - pt.Y - 3, 6, 6)
 
@@ -183,19 +182,19 @@ Public Class FormMain
         Next
 
         ' Draw the regression equation
-        g.DrawString("y = " + CSng(lr.Slope).ToString + "x " + If(lr.Intercept > 0, "+ ", "") + CSng(lr.Intercept).ToString, fontBig, brhBlack, 10, 10)
+        g.DrawString("y = " + CSng(lr.slope).ToString + "x " + If(lr.intercept > 0, "+ ", "") + CSng(lr.intercept).ToString, fontBig, brhBlack, 10, 10)
 
         ' Draw the trend line
         Dim xStart As Single = -picMain.Width / 2
-        Dim yStart As Single = CSng(lr.Slope * xStart + lr.Intercept)
+        Dim yStart As Single = CSng(lr.slope * xStart + lr.intercept)
         Dim xEnd As Single = picMain.Width / 2
-        Dim yEnd As Single = CSng(lr.Slope * xEnd + lr.Intercept)
+        Dim yEnd As Single = CSng(lr.slope * xEnd + lr.intercept)
         g.DrawLine(New Pen(Color.Green, 2), dx + xStart, dy - yStart, dx + xEnd, dy - yEnd)
 
         ' Draw the line from each point to its nearest point on trend line
-        For Each pt As PointS In points
-            Dim xNearest As Double = (pt.X + lr.Slope * pt.Y - lr.Slope * lr.Intercept) / (lr.Slope ^ 2 + 1)
-            Dim yNearest As Double = lr.Slope * xNearest + lr.Intercept
+        For Each pt As PointF In ptForOutlier
+            Dim xNearest As Double = (pt.X + lr.slope * pt.Y - lr.slope * lr.intercept) / (lr.slope ^ 2 + 1)
+            Dim yNearest As Double = lr.slope * xNearest + lr.intercept
 
             ' Draw the nearest point on the trend line
             g.FillEllipse(brhRed, CSng(dx + xNearest - 3), CSng(dy - yNearest - 3), 6, 6)
@@ -209,7 +208,7 @@ Public Class FormMain
     End Sub
 
     Private Sub UpdatePointsFromDataGrid()
-        points.Clear()
+        ptForOutlier.Clear()
         ' Add new points from DataGridView
         For Each row As DataGridViewRow In dataGrid.Rows
             Dim x As Single
@@ -222,7 +221,7 @@ Public Class FormMain
             Try
                 ' Try to parse the values from the DataGridView cells
                 If Single.TryParse(row.Cells(0).Value.ToString(), x) AndAlso Single.TryParse(row.Cells(1).Value.ToString(), y) Then
-                    points.Add(New PointS With {.X = x, .Y = y})
+                    ptForOutlier.Add(New PointF With {.X = x, .Y = y})
                 End If
             Catch ex As Exception
             End Try
@@ -231,28 +230,32 @@ Public Class FormMain
 
 End Class
 
-' Point class
-Public Class PointS
-    Public Property X As Single
-    Public Property Y As Single
-End Class
 
 ' Circle Class
 Public Class Circle
-    Public Property CenterX As Single
-    Public Property CenterY As Single
-    Public Property Radius As Single
+    Public center As PointF
+    Public Property radius As Single
 End Class
 
-Public Class LinearRegression
-    Public Property Slope As Double
-    Public Property Intercept As Double
-End Class
+Public Structure Line
+    Public startPt As PointF
+    Public endPt As PointF
+    Public slope As Double
+    Public intercept As Double
+
+    Public Sub New(startPoint As PointF, endPoint As PointF)
+        startPt = startPoint
+        endPt = endPoint
+
+        slope = (endPoint.Y - startPoint.Y) / (endPoint.X - startPoint.X)
+        intercept = startPoint.Y - slope * startPoint.X
+    End Sub
+End Structure
 
 Public Class CircleFit
 
     ' Use the Least Squares method to find the best-fit circle
-    Public Shared Function FitCircle(points As List(Of PointS)) As Circle
+    Public Shared Function FitCircle(points As List(Of PointF)) As Circle
         If points Is Nothing OrElse points.Count < 2 Then
             Throw New ArgumentException("At least two points are required for best fit circle.")
         End If
@@ -277,16 +280,18 @@ Public Class CircleFit
         Dim centerX As Double = x(0)
         Dim centerY As Double = x(1)
         Dim radius As Double = Math.Sqrt(centerX ^ 2 + centerY ^ 2 - x(2))
+        Dim pt As PointF
+        pt.X = x(0)
+        pt.Y = x(1)
 
-        Return New Circle With {.CenterX = CSng(centerX), .CenterY = CSng(centerY), .Radius = CSng(radius)}
+        Return New Circle With {.center = pt, .radius = CSng(radius)}
     End Function
 
 End Class
 
-
 Public Class TrendLineFinder
 
-    Public Shared Function Calculate(ByVal points As List(Of PointS)) As LinearRegression
+    Public Shared Function Calculate(ByVal points As List(Of PointF)) As Line
         If points Is Nothing OrElse points.Count < 2 Then
             Throw New ArgumentException("At least two points are required for linear regression.")
         End If
@@ -307,6 +312,6 @@ Public Class TrendLineFinder
         Dim Slope As Double = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
         Dim Intercept As Double = (sumY - Slope * sumX) / n
 
-        Return New LinearRegression With {.Slope = Slope, .Intercept = Intercept}
+        Return New Line With {.slope = Slope, .intercept = Intercept}
     End Function
 End Class
